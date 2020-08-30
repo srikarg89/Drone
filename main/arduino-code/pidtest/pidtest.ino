@@ -3,6 +3,7 @@
 #include "PWMMotorControl.h"
 
 #define THROTTLE_PIN A0
+#define PID_PIN A1
 
 IMU myImu;
 
@@ -22,12 +23,26 @@ void setup(){
     Serial.begin(9600);
     delay(1000);
     Serial.println("Setting up");
+    pinMode(THROTTLE_PIN, INPUT);
+    pinMode(PID_PIN, INPUT);
+    setGains();
     myImu.begin(-1, 0x28);
     pid.begin(gains1, gains2, bounds);
     myImu.printCalibration();
     myImu.calibrateOffsets();
     controller.begin();
-    pinMode(THROTTLE_PIN, INPUT);
+}
+
+double mymap(double x, double in_min, double in_max, double out_min, double out_max) {
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
+double setGains(){
+    int pidAnalog = pulseIn(PID_PIN, HIGH); // Gives number between 1000 to 2000
+    double analogDouble = (double) pidAnalog;
+    double pidVal = mymap(analogDouble, 1000.0, 2000.0, 0.0, 5.0);
+    gains1[0] = pidVal;
+    gains2[0] = pidVal;
 }
 
 void pidToMotors(double changes[2], int *diffs){
