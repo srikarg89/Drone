@@ -8,8 +8,8 @@ IMU myImu;
 
 // Gain constants: P, I, D
 // Setting gain constants: P, I, D
-double gains1[3] = {1, 0, 0};
-double gains2[3] = {1, 0, 0};
+double gains1[3] = {0.5, 0, 0};
+double gains2[3] = {0.5, 0, 0};
 // Pitch, Roll, Yaw
 double bounds[3] = {150, 150, 0};
 
@@ -40,7 +40,7 @@ void pidToMotors(double changes[2], int *diffs){
 void updateAverage(){
     int throttleAnalog = pulseIn(THROTTLE_PIN, HIGH); // Gives number between 1000 to 2000
     if(throttleAnalog < 1050){
-      throttleAnalog = 1000;
+      throttleAnalog = 1050;
     }
     Serial.print("Setting average: ");
     Serial.println(throttleAnalog);
@@ -62,6 +62,4 @@ void loop(){
     controller.setDiffs(diffs);
 
     controller.control();
-
-    delay(1000);
 }
