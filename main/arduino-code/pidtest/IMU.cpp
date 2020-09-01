@@ -39,6 +39,12 @@ double round180(double num){
     if(num < -180){
         num += 360;
     }
+    if(num > 90){
+        num -= 180;
+    }
+    if(num < -90){
+        num += 180;
+    }
     return num;
 }
 
@@ -70,6 +76,11 @@ void IMU::getCalibration(uint8_t *cals){
     cals[1] = gyro;
     cals[2] = accel;
     cals[3] = mag;
+    Serial.print(system);
+    Serial.print(gyro);
+    Serial.print(accel);
+    Serial.print(mag);
+    Serial.println();
 }
 
 void IMU::calibrateOffsets(){

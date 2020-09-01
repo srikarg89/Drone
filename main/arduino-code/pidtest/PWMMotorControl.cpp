@@ -44,10 +44,11 @@ void PWMMotorControl::control(){
     for(int idx = 0; idx < NUM_MOTORS; idx++){
         int target = targets[idx];
         Servo esc = escs[idx];
-        Serial.print("Writing: ");
-        Serial.println(target);
+        Serial.print("\tWriting: ");
+        Serial.print(target);
         esc.writeMicroseconds(target);
     }
+    Serial.println();
 }
 
 void PWMMotorControl::updateThrottles(){

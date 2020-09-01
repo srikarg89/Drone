@@ -9,8 +9,8 @@ IMU myImu;
 
 // Gain constants: P, I, D
 // Setting gain constants: P, I, D
-double gains1[3] = {0.5, 0, 0};
-double gains2[3] = {0.5, 0, 0};
+double gains1[3] = {2, 0, 0};
+double gains2[3] = {2, 0, 0};
 // Pitch, Roll, Yaw
 double bounds[3] = {150, 150, 0};
 
@@ -20,7 +20,7 @@ int pins[4] = {3, 6, 9, 10};
 PWMMotorControl controller(pins);
 
 void setup(){
-    Serial.begin(9600);
+    Serial.begin(115200);
     delay(1000);
     Serial.println("Setting up");
     pinMode(THROTTLE_PIN, INPUT);
@@ -40,9 +40,12 @@ double mymap(double x, double in_min, double in_max, double out_min, double out_
 double setGains(){
     int pidAnalog = pulseIn(PID_PIN, HIGH); // Gives number between 1000 to 2000
     double analogDouble = (double) pidAnalog;
-    double pidVal = mymap(analogDouble, 1000.0, 2000.0, 0.0, 5.0);
-    gains1[0] = pidVal;
-    gains2[0] = pidVal;
+    // double pidVal = mymap(analogDouble, 1000.0, 2000.0, 0.0, 5.0);
+    double pidVal = mymap(analogDouble, 1000.0, 2000.0, 0.0, 1.0);
+    gains1[2] = pidVal;
+    gains2[2] = pidVal;
+    Serial.print("Gain: ");
+    Serial.println(pidVal);
 }
 
 void pidToMotors(double changes[2], int *diffs){
@@ -77,4 +80,5 @@ void loop(){
     controller.setDiffs(diffs);
 
     controller.control();
+    delay(10);
 }

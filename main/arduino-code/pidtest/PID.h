@@ -9,7 +9,7 @@ class PID{
         PID();
         void begin(double gains1[], double gains2[], double bounds[3]);
         void update(double x, double y, double z, double *changes);
-        double runPID(double gains[], double prevError, double error, double dt, double &total_error, double bound);
+        double runPID(double gains[], double prevError, double error, double dt, double total_error, double bound);
     private:
         double _gains1[3], _gains2[3], _bounds[3];
         double prevError1, prevError2;

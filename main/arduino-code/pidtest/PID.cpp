@@ -23,11 +23,15 @@ void PID::update(double x, double y, double z, double *changes){
     double states[4];
     double change1 = runPID(_gains1, prevError1, y, dt, total_error1, _bounds[0]);
     double change2 = runPID(_gains2, prevError2, z, dt, total_error2, _bounds[1]);
+    prevError1 = y;
+    prevError2 = z;
+    total_error1 += y;
+    total_error2 += z;
     changes[0] = change1;
     changes[1] = change2;
 }
 
-double PID::runPID(double gains[], double prevError, double error, double dt, double &total_error, double bound){
+double PID::runPID(double gains[], double prevError, double error, double dt, double total_error, double bound){
     /*
     double P = gains[0] * error;
     double D = ((error - prevError) / dt) * gains[2];
@@ -39,8 +43,10 @@ double PID::runPID(double gains[], double prevError, double error, double dt, do
     double minbound = -bound;
     double P = gains[0] * error;
     double D = (error - prevError) * gains[2];
-    prevError = error;
-    total_error += error;
+    Serial.print("P: ");
+    Serial.println(P);
+    Serial.print("D: ");
+    Serial.println(D);
     double I = gains[1] * total_error;
     I = min(I, bound);
     I = max(I, minbound);
