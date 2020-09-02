@@ -11,10 +11,12 @@ IMU myImu;
 
 // Gain constants: P, I, D
 // Setting gain constants: P, I, D
-double gains1[3] = {2, 0, 0};
-double gains2[3] = {2, 0, 0};
+double gains1[3] = {5, 0, 1};
+double gains2[3] = {5, 0, 1};
 // Pitch, Roll, Yaw
 double bounds[3] = {50, 50, 0};
+double filters[3] = {10, 10, 0};
+
 
 PID pid;
 
@@ -29,7 +31,7 @@ void setup(){
     pinMode(PID_PIN, INPUT);
     setGains();
     myImu.begin(-1, 0x28);
-    pid.begin(gains1, gains2, bounds);
+    pid.begin(gains1, gains2, bounds, filters);
     myImu.printCalibration();
     myImu.calibrateOffsets();
     controller.begin();
@@ -44,13 +46,9 @@ double setGains(){
     double analogDouble = (double) pidAnalog;
     // double pidVal = mymap(analogDouble, 1000.0, 2000.0, 0.0, 5.0);
     // double pidVal = mymap(analogDouble, 1000.0, 2000.0, 0.0, 1.0);
-    double pidVal = 0.25;
-    gains1[0] = 5.0;
-    gains2[0] = 5.0;
-    gains1[2] = 1.0;
-    gains2[2] = 1.0;
-    Serial.print("Gain: ");
-    Serial.println(pidVal);
+    // double pidVal = 0.25;
+    // Serial.print("Gain: ");
+    // Serial.println(pidVal);
 }
 
 void pidToMotors(double changes[2], int *diffs){
@@ -73,7 +71,6 @@ void updateAverage(){
 
 void loop(){
     updateAverage();
-    // myImu.getTemp();
     myImu.getEuler();
     Serial.println(String("IMU Data:") + String("\tx=") + myImu.x + String("\ty=") + myImu.y + String("\tz=") + myImu.z);
     double changes[2];

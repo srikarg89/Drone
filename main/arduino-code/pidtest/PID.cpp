@@ -2,11 +2,12 @@
 
 PID::PID(){}
 
-void PID::begin(double gains1[3], double gains2[3], double bounds[3]){
+void PID::begin(double gains1[3], double gains2[3], double bounds[3], double filters[3]){
     for(int i = 0; i < 3; i++){
         _gains1[i] = gains1[i];
         _gains2[i] = gains2[i];
         _bounds[i] = bounds[i];
+        _filters[i] = filters[i];
     }
     prevError1 = 0;
     prevError2 = 0;
@@ -21,8 +22,8 @@ void PID::update(double x, double y, double z, double *changes){
     last_time = millis();
     double pid[3];
     double states[4];
-    double change1 = runPID(_gains1, prevError1, y, dt, total_error1, _bounds[0]);
-    double change2 = runPID(_gains2, prevError2, z, dt, total_error2, _bounds[1]);
+    double change1 = runPID(_gains1, prevError1, y, dt, total_error1, _bounds[0], _filters[0]);
+    double change2 = runPID(_gains2, prevError2, z, dt, total_error2, _bounds[1], _filters[1]);
     prevError1 = y;
     prevError2 = z;
     total_error1 += y;
@@ -39,7 +40,7 @@ double myabs(double val){
     return val;
 }
 
-double PID::runPID(double gains[], double prevError, double error, double dt, double total_error, double bound){
+double PID::runPID(double gains[], double prevError, double error, double dt, double total_error, double bound, double N){
     /*
     double P = gains[0] * error;
     double D = ((error - prevError) / dt) * gains[2];
@@ -52,7 +53,7 @@ double PID::runPID(double gains[], double prevError, double error, double dt, do
     double P = gains[0] * error;
     double D = ((error - prevError) * gains[2]) / dt;
     // Filter: N is the filter coeficcient
-    // D = (D * N) / (D + N);
+    D = (D * N) / (D + N);
     if(myabs(error) > myabs(prevError)){
         D = 0;
     }
@@ -60,6 +61,7 @@ double PID::runPID(double gains[], double prevError, double error, double dt, do
     Serial.println(P);
     Serial.print("D: ");
     Serial.println(D);
+    // Not using I rn, so gains[1] is just 0
     double I = gains[1] * total_error;
     I = min(I, bound);
     I = max(I, minbound);
