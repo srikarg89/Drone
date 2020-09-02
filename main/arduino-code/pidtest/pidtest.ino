@@ -5,6 +5,8 @@
 #define THROTTLE_PIN A0
 #define PID_PIN A1
 
+double TARGETY = 0.0;
+
 IMU myImu;
 
 // Gain constants: P, I, D
@@ -12,7 +14,7 @@ IMU myImu;
 double gains1[3] = {2, 0, 0};
 double gains2[3] = {2, 0, 0};
 // Pitch, Roll, Yaw
-double bounds[3] = {150, 150, 0};
+double bounds[3] = {50, 50, 0};
 
 PID pid;
 
@@ -41,9 +43,12 @@ double setGains(){
     int pidAnalog = pulseIn(PID_PIN, HIGH); // Gives number between 1000 to 2000
     double analogDouble = (double) pidAnalog;
     // double pidVal = mymap(analogDouble, 1000.0, 2000.0, 0.0, 5.0);
-    double pidVal = mymap(analogDouble, 1000.0, 2000.0, 0.0, 1.0);
-    gains1[2] = pidVal;
-    gains2[2] = pidVal;
+    // double pidVal = mymap(analogDouble, 1000.0, 2000.0, 0.0, 1.0);
+    double pidVal = 0.25;
+    gains1[0] = 5.0;
+    gains2[0] = 5.0;
+    gains1[2] = 1.0;
+    gains2[2] = 1.0;
     Serial.print("Gain: ");
     Serial.println(pidVal);
 }
@@ -72,7 +77,7 @@ void loop(){
     myImu.getEuler();
     Serial.println(String("IMU Data:") + String("\tx=") + myImu.x + String("\ty=") + myImu.y + String("\tz=") + myImu.z);
     double changes[2];
-    pid.update(myImu.x, myImu.y, myImu.z, &changes[0]);
+    pid.update(myImu.x, myImu.y - TARGETY, myImu.z, &changes[0]);
     Serial.println(String("Changes:\t") + changes[0] + String("\t") + changes[1]);
     int diffs[4];
     pidToMotors(changes, &diffs[0]);
@@ -80,5 +85,5 @@ void loop(){
     controller.setDiffs(diffs);
 
     controller.control();
-    delay(10);
+    delay(50);
 }

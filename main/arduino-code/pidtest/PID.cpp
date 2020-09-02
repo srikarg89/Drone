@@ -29,6 +29,14 @@ void PID::update(double x, double y, double z, double *changes){
     total_error2 += z;
     changes[0] = change1;
     changes[1] = change2;
+    // changes[1] = 0.0;
+}
+
+double myabs(double val){
+    if(val < 0){
+        return -val;
+    }
+    return val;
 }
 
 double PID::runPID(double gains[], double prevError, double error, double dt, double total_error, double bound){
@@ -42,7 +50,12 @@ double PID::runPID(double gains[], double prevError, double error, double dt, do
     */
     double minbound = -bound;
     double P = gains[0] * error;
-    double D = (error - prevError) * gains[2];
+    double D = ((error - prevError) * gains[2]) / dt;
+    // Filter: N is the filter coeficcient
+    // D = (D * N) / (D + N);
+    if(myabs(error) > myabs(prevError)){
+        D = 0;
+    }
     Serial.print("P: ");
     Serial.println(P);
     Serial.print("D: ");

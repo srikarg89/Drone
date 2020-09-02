@@ -43,6 +43,9 @@ void PWMMotorControl::control(){
     Serial.println("CONTROLLING");
     for(int idx = 0; idx < NUM_MOTORS; idx++){
         int target = targets[idx];
+        if(average == 1000){
+            target = 1000;
+        }
         Servo esc = escs[idx];
         Serial.print("\tWriting: ");
         Serial.print(target);

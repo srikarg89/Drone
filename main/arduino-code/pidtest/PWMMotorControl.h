@@ -8,7 +8,7 @@ class PWMMotorControl{
 private:
     const int NUM_MOTORS = 4;
     const int MIN_THROTTLE = 1000;
-    const int MAX_THROTTLE = 1400;
+    const int MAX_THROTTLE = 1600;
     uint16_t diffs[4];
     uint16_t pins[4];
     Servo escs[4];
