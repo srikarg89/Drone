@@ -64,9 +64,13 @@ void PWMMotorControl::updateThrottles(){
 }
 
 void PWMMotorControl::setAverage(int throttleAnalog){
-    average = map(throttleAnalog, 1050, 2000, MIN_THROTTLE, MAX_THROTTLE);
-    Serial.println(average);
-    updateThrottles();
+    uint16_t newAverage = map(throttleAnalog, 1050, 2000, MIN_THROTTLE, MAX_THROTTLE);
+    if(newAverage != average){
+        average = newAverage;
+        Serial.print("Setting average: ");
+        Serial.println(average);
+        updateThrottles();
+    }
 }
 
 void PWMMotorControl::setDiffs(int newDiffs[]){

@@ -11,12 +11,15 @@ IMU myImu;
 
 // Gain constants: P, I, D
 // Setting gain constants: P, I, D
-double gains1[3] = {5, 0, 1};
-double gains2[3] = {5, 0, 1};
+double gains1[3] = {5.0, 0.02, 1.1};
+double gains2[3] = {5.0, 0.02, 1.1};
 // Pitch, Roll, Yaw
-double bounds[3] = {50, 50, 0};
+double error_bounds[3] = {1023, 1023, 1023};
 double filters[3] = {10, 10, 0};
+double pid_bounds[3] = {150, 150, 0};
 
+unsigned long start_time;
+unsigned long total_loops;
 
 PID pid;
 
@@ -31,10 +34,12 @@ void setup(){
     pinMode(PID_PIN, INPUT);
     setGains();
     myImu.begin(-1, 0x28);
-    pid.begin(gains1, gains2, bounds, filters);
+    pid.begin(gains1, gains2, error_bounds, pid_bounds, filters);
     myImu.printCalibration();
     myImu.calibrateOffsets();
     controller.begin();
+    total_loops = 0;
+    start_time = millis();
 }
 
 double mymap(double x, double in_min, double in_max, double out_min, double out_max) {
@@ -52,10 +57,10 @@ double setGains(){
 }
 
 void pidToMotors(double changes[2], int *diffs){
-    diffs[0] = (int)(changes[0] + changes[1]);
-    diffs[1] = (int)(changes[0] - changes[1]);
-    diffs[2] = (int)(-changes[0] - changes[1]);
-    diffs[3] = (int)(-changes[0] + changes[1]);
+    diffs[0] = (int)((changes[0] + changes[1]) / 2.0);
+    diffs[1] = (int)((changes[0] - changes[1]) / 2.0);
+    diffs[2] = (int)((-changes[0] - changes[1]) / 2.0);
+    diffs[3] = (int)((-changes[0] + changes[1]) / 2.0);
 }
 
 void updateAverage(){
@@ -63,8 +68,6 @@ void updateAverage(){
     if(throttleAnalog < 1050){
       throttleAnalog = 1050;
     }
-    Serial.print("Setting average: ");
-    Serial.println(throttleAnalog);
     controller.setAverage(throttleAnalog);
 }
 
@@ -82,5 +85,7 @@ void loop(){
     controller.setDiffs(diffs);
 
     controller.control();
-    delay(50);
+    // delay(50);
+    Serial.print("Time per loop:");
+    Serial.println((millis() - start_time) / total_loops)
 }
