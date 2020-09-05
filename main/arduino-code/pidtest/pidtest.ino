@@ -14,7 +14,7 @@ IMU myImu;
 double gains1[3] = {5.0, 5.0, 1.1};
 double gains2[3] = {5.0, 5.0, 1.1};
 // Pitch, Roll, Yaw
-double error_bounds[3] = {1023, 1023, 1023};
+double error_bounds[3] = {20.0, 20.0, 20.0};
 double filters[3] = {10, 10, 0};
 double pid_bounds[3] = {150, 150, 0};
 

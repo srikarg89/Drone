@@ -31,8 +31,8 @@ void PID::update(double x, double y, double z, double *changes){
     // Let's ignore z for now: x is direction 1, y is direction 2
     double dt = (double)(millis() - last_time) / 1000.0;
     last_time = millis();
-    total_error1 += y;
-    total_error2 += z;
+    total_error1 += (y + prevError1) * dt / 2.0;
+    total_error1 += (z + prevError2) * dt / 2.0;
     total_error1 = bound(total_error1, -_error_bounds[0], _error_bounds[0]);
     total_error2 = bound(total_error2, -_error_bounds[1], _error_bounds[1]);
     double change1 = runPID(_gains1, prevError1, y, dt, total_error1, _pid_bounds[0], _filters[0]);
@@ -68,7 +68,7 @@ double PID::runPID(double gains[], double prevError, double error, double dt, do
     // if(myabs(error) > myabs(prevError)){
     //     D = 0;
     // }
-    double I = gains[1] * total_error * dt;
+    double I = gains[1] * total_error;
     double total = P + I + D;
     total = bound(total, minbound, bound);
     Serial.print("P: ");
