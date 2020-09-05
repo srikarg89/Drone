@@ -11,8 +11,8 @@ IMU myImu;
 
 // Gain constants: P, I, D
 // Setting gain constants: P, I, D
-double gains1[3] = {5.0, 0.02, 1.1};
-double gains2[3] = {5.0, 0.02, 1.1};
+double gains1[3] = {5.0, 5.0, 1.1};
+double gains2[3] = {5.0, 5.0, 1.1};
 // Pitch, Roll, Yaw
 double error_bounds[3] = {1023, 1023, 1023};
 double filters[3] = {10, 10, 0};

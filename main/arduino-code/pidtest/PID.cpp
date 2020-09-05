@@ -68,7 +68,7 @@ double PID::runPID(double gains[], double prevError, double error, double dt, do
     // if(myabs(error) > myabs(prevError)){
     //     D = 0;
     // }
-    double I = gains[1] * total_error;
+    double I = gains[1] * total_error * dt;
     double total = P + I + D;
     total = bound(total, minbound, bound);
     Serial.print("P: ");
