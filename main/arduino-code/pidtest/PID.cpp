@@ -17,7 +17,7 @@ void PID::begin(double gains1[3], double gains2[3], double error_bounds[3], doub
     total_error2 = 0;
 }
 
-void bound(double val, double lower, double upper){
+double min_max_bound(double val, double lower, double upper){
     if(val < lower){
         return lower;
     }
@@ -33,8 +33,8 @@ void PID::update(double x, double y, double z, double *changes){
     last_time = millis();
     total_error1 += (y + prevError1) * dt / 2.0;
     total_error1 += (z + prevError2) * dt / 2.0;
-    total_error1 = bound(total_error1, -_error_bounds[0], _error_bounds[0]);
-    total_error2 = bound(total_error2, -_error_bounds[1], _error_bounds[1]);
+    total_error1 = min_max_bound(total_error1, -_error_bounds[0], _error_bounds[0]);
+    total_error2 = min_max_bound(total_error2, -_error_bounds[1], _error_bounds[1]);
     double change1 = runPID(_gains1, prevError1, y, dt, total_error1, _pid_bounds[0], _filters[0]);
     double change2 = runPID(_gains2, prevError2, z, dt, total_error2, _pid_bounds[1], _filters[1]);
     prevError1 = y;
@@ -70,7 +70,7 @@ double PID::runPID(double gains[], double prevError, double error, double dt, do
     // }
     double I = gains[1] * total_error;
     double total = P + I + D;
-    total = bound(total, minbound, bound);
+    total = min_max_bound(total, minbound, bound);
     Serial.print("P: ");
     Serial.println(P);
     Serial.print("I: ");
@@ -79,7 +79,6 @@ double PID::runPID(double gains[], double prevError, double error, double dt, do
     Serial.println(D);
     Serial.print("Total: ");
     Serial.println(total);
-    // Not using I rn, so gains[1] is just 0
     return total;
 }
 

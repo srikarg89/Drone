@@ -1,72 +1,65 @@
-/*
-   Connections
-   ===========
-   Connect SCL to analog 5
-   Connect SDA to analog 4
-   Connect VDD to 3.3V DC
-   Connect GROUND to common ground
-*/
-
-#include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
-#include <utility/imumaths.h>
 
-int id = -1;
-int addr = 0x28;
+unsigned long start_time;
+int num_loops;
+
 Adafruit_BNO055 bno;
-
-/*
-double offsetX = 159.13;
-double offsetY = 2.00;
-double offsetZ = 166.13;
-*/
-double offsetX = 0;
-double offsetY = 0;
-double offsetZ = 0;
 
 void setup()
 {
-    Serial.begin(9600);
-    Serial.println("Setting up!");
-    bno = Adafruit_BNO055(id, addr);
+    Serial.begin(115200);
+    bno = Adafruit_BNO055(-1, 0x28);
     if(!bno.begin())
     {
         /* There was a problem detecting the BNO055 ... check your connections */
         Serial.println("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
         while(1);
     }
-}
 
-void printTemp(){
-    int8_t temp = bno.getTemp();
-    Serial.println(String("TEMP: ") + temp);
-}
+    bno.setExtCrystalUse(true);
 
-void printEuler(){
-    imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
-    double x = euler.x() - offsetX;
-    double y = euler.y() - offsetY;
-    double z = euler.z() - offsetZ;
-    Serial.println(String("EULER: x=") + x + String(", y=") + y + String(", z=") + z);
-}
-
-void printCalibration(){
-    uint8_t system, gyro, accel, mag = 0;
-    bno.getCalibration(&system, &gyro, &accel, &mag);
-    Serial.print("CALIBRATION: Sys=");
-    Serial.print(system, DEC);
-    Serial.print(" Gyro=");
-    Serial.print(gyro, DEC);
-    Serial.print(" Accel=");
-    Serial.print(accel, DEC);
-    Serial.print(" Mag=");
-    Serial.println(mag, DEC);
+    while(true){
+        uint8_t cals[4];
+        getCalibration(bno, &cals[0]);
+        if(cals[1] != 0){
+            break;
+        }
+        Serial.println("Waiting for gyro calibration");
+        delay(100);
+    }
+    num_loops = 0;
 }
 
 void loop()
 {
-//    printCalibration();
-//    printTemp();
-    printEuler();
-    delay(1000);
+    num_loops += 1;
+    if(num_loops == 1){
+        start_time = millis();
+    }
+    imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
+    Serial.print("X: ");
+    Serial.print(euler.x());
+    Serial.print("Y: ");
+    Serial.print(euler.y());
+    Serial.print("Z: ");
+    Serial.print(euler.z());
+    Serial.println();
+    double diff = (double)(millis() - start_time);
+    Serial.print("Time (ms) per loop: ");
+    Serial.println(diff / (double)num_loops);
+    Serial.println(diff);
+}
+
+void getCalibration(Adafruit_BNO055 bno, uint8_t *cals){
+    uint8_t system, gyro, accel, mag = 0;
+    bno.getCalibration(&system, &gyro, &accel, &mag);
+    cals[0] = system;
+    cals[1] = gyro;
+    cals[2] = accel;
+    cals[3] = mag;
+    Serial.print(system);
+    Serial.print(gyro);
+    Serial.print(accel);
+    Serial.print(mag);
+    Serial.println();
 }

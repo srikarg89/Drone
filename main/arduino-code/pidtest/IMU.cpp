@@ -24,12 +24,14 @@ void IMU::begin(int id, int addr){
         Serial.println("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
         while(1);
     }
-    x = 0; y = 0; z = 0;
-    temp = 0;
-}
 
-void IMU::getTemp(){
-    temp = bno.getTemp();
+    bno.setExtCrystalUse(true);
+
+    x = 0; y = 0; z = 0;
+    kalmanX.setAngle(x);
+    kalmanY.setAngle(y);
+    kalmanZ.setAngle(z);
+    last_measured_time = millis();
 }
 
 double round180(double num){
@@ -48,12 +50,44 @@ double round180(double num){
     return num;
 }
 
+// void measure(){
+//   imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
+//   imu::Vector<3> gyro = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
+//   x = euler.x() - xOff;
+//   double curr_time = millis();
+//   double dt = (curr_time - last_measured_time) / 1000;
+//   x = kalmanX.getAngle(x, gyro.x(), dt);
+//   last_measured_time = curr_time;
+// }
+
 void IMU::getEuler(){
     imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
+    imu::Vector<3> gyro = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
+    double curr_time = millis();
 //    Serial.println(String("Offsets: ") + xOff + String(" ") + yOff + String(" ") + zOff);
     x = round180(euler.x() - xOff);
     y = round180(euler.y() - yOff);
     z = round180(euler.z() - zOff);
+    double dt = (curr_time - last_measured_time) / 1000;
+    if(euler.x() < -90 || euler.x() > 90){
+        kalmanX.setAngle(x);
+    }
+    else{
+        x = kalmanX.getAngle(x, gyro.x(), dt);
+    }
+    if(euler.y() < -90 || euler.y() > 90){
+        kalmanY.setAngle(y);
+    }
+    else{
+        y = kalmanY.getAngle(y, gyro.y(), dt);
+    }
+    if(euler.z() < -90 || euler.z() > 90){
+        kalmanZ.setAngle(z);
+    }
+    else{
+        z = kalmanZ.getAngle(z, gyro.z(), dt);
+    }
+    last_measured_time = curr_time;
 }
 
 void IMU::printCalibration(){

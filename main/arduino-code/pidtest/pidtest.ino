@@ -32,7 +32,7 @@ void setup(){
     Serial.println("Setting up");
     pinMode(THROTTLE_PIN, INPUT);
     pinMode(PID_PIN, INPUT);
-    setGains();
+    // setGains();
     myImu.begin(-1, 0x28);
     pid.begin(gains1, gains2, error_bounds, pid_bounds, filters);
     myImu.printCalibration();
@@ -73,6 +73,10 @@ void updateAverage(){
 
 
 void loop(){
+    if(total_loops == 0){
+        start_time = millis();
+    }
+    total_loops += 1;
     updateAverage();
     myImu.getEuler();
     Serial.println(String("IMU Data:") + String("\tx=") + myImu.x + String("\ty=") + myImu.y + String("\tz=") + myImu.z);
@@ -81,11 +85,13 @@ void loop(){
     Serial.println(String("Changes:\t") + changes[0] + String("\t") + changes[1]);
     int diffs[4];
     pidToMotors(changes, &diffs[0]);
-//    Serial.println(String("Diffs:\t") + diffs[0] + String("\t") + diffs[1] + String("\t") + diffs[2] + String("\t") + diffs[3]);
     controller.setDiffs(diffs);
 
     controller.control();
-    // delay(50);
-    Serial.print("Time per loop:");
-    Serial.println((millis() - start_time) / total_loops)
+    if(total_loops % 10 == 0){
+        Serial.print("Time per loop:");
+        double diff = (double)(millis() - start_time);
+        Serial.println(diff / (double)total_loops);
+        Serial.println(millis() - start_time);
+    }
 }
